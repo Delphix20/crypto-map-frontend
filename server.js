@@ -72,7 +72,9 @@ app.get('/purchased-countries', (req, res) => {
         res.status(200).json(JSON.parse(data));
     });
 });
-
+app.get('/', (req, res) => {
+    res.send('Welcome to the Crypto Map Backend! Use the API routes like /purchased-countries or /purchase.');
+});
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

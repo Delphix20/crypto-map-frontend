@@ -66,7 +66,38 @@
         .popup button:hover {
             background-color: #2980b9;
         }
-
+        #popup {
+    display: none;
+    border: 2px solid #444;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+#popup h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+#popup button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+#popup button:hover {
+    background-color: #218838;
+}
         #popup-status {
             font-weight: bold;
         }
@@ -109,6 +140,14 @@
         <button id="close-btn">Close</button>
     </div>
 
+    <div id="popup" style="display: none; border: 1px solid #ccc; padding: 20px; background: white; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+        <h3 id="popup-title">Country Name</h3>
+        <p>Status: <span id="popup-status">Available</span></p>
+        <p>Price: <span id="popup-price">0.01 BTC</span></p>
+        <button id="purchase-btn">Purchase</button>
+        <button id="close-btn">Close</button>
+    </div>
+    
     <script>
         const backendUrl = 'https://crypto-map-backend.onrender.com'; // Replace with your backend's domain
         const svgPath = './map.html'; // Your SVG path
@@ -127,29 +166,42 @@
         });
 
         function initializeMap() {
-            const countryPrices = {
-                "country-usa": { name: "USA", price: 0.01 },
-                "country-canada": { name: "Canada", price: 0.008 }
-            };
+    document.querySelectorAll('path').forEach(country => {
+        country.addEventListener('click', function () {
+            const countryId = this.id;
+            console.log(`Clicked on: ${countryId}`);
+            
+            const popup = document.getElementById('popup');
+            popup.style.display = 'block';
+            document.getElementById('popup-title').textContent = countryId;
+        });
+    });
+}
+document.getElementById('close-btn').addEventListener('click', function () {
+    document.getElementById('popup').style.display = 'none';
+});
 
             // Load purchased countries from backend and update map status
             async function loadPurchasedCountries() {
     try {
-        const response = await fetch('http://127.0.0.1:5001/purchased-countries'); // Backend URL
+        const response = await fetch(`${backendUrl}/purchased-countries`);
         if (!response.ok) {
             throw new Error(`Failed to fetch purchased countries: ${response.statusText}`);
         }
         const purchasedCountries = await response.json();
-
-        // Mark purchased countries as "sold"
         purchasedCountries.forEach(country => {
-            $(`#${country.countryId}`).addClass('sold');
+            const countryElement = document.getElementById(country.countryId);
+            if (countryElement) {
+                countryElement.classList.add('sold');
+            }
         });
+        console.log('Purchased countries loaded successfully.');
     } catch (error) {
         console.error('Error fetching purchased countries:', error);
         alert('Failed to load purchased countries.');
     }
 }
+
 $('#purchase-btn').on('click', async function () {
     const countryId = $(this).data('countryId'); // Selected country
     const priceInBTC = countryPrices[countryId].price;
@@ -270,7 +322,8 @@ $('#purchase-btn').on('click', async function () {
 
             // Load purchased countries
             loadPurchasedCountries();
-        }
+        
     </script>
+    <script src="script.js" defer></script>
 </body>
 </html>
